@@ -1,0 +1,33 @@
+name: PR QA
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Checkout and Build
+    runs-on: ubuntu-24.04
+
+    strategy:
+      matrix:
+        java-version: [11, 21]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: JDK setup
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'temurin'
+          cache: maven
+      - name: Build with Maven
+        run: |
+            ant version
+            mvn --batch-mode clean validate
+            mvn -f pom-common.xml
+            mvn -f pom-discovery.xml
+            mvn
+
+
